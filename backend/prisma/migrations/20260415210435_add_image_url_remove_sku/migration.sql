@@ -5,8 +5,8 @@
 
 */
 -- DropIndex
-DROP INDEX "products_sku_key";
+DROP INDEX IF EXISTS "products_sku_key";
 
 -- AlterTable
-ALTER TABLE "products" DROP COLUMN "sku",
-ADD COLUMN     "imageUrl" TEXT;
+ALTER TABLE "products" DROP COLUMN IF EXISTS "sku",
+ADD COLUMN   "imageUrl" TEXT;

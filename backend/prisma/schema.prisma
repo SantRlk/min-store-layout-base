@@ -1,5 +1,6 @@
 generator client {
   provider = "prisma-client-js"
+  output   = "../generated/prisma"
 }
 
 datasource db {
@@ -7,66 +8,8 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Plan {
-  id        Int     @id @default(autoincrement())
-  name      String
-  price     Decimal @db.Decimal(10, 2)
-  maxLinks  Int     @map("max_links")
-  maxClicks Int     @map("max_clicks")
-  users     User?
-
-  @@map("plans")
-}
-
-model User {
-  id           BigInt      @id @default(autoincrement())
-  email        String      @unique
-  passwordHash String      @map("password_hash")
-  createdAt    DateTime    @default(now()) @map("created_at")
-  planId       Int?        @unique @map("plan_id")
-  reports      Report[]
-  shortLinks   ShortLink[]
-  plan         Plan?       @relation(fields: [planId], references: [id])
-
-  @@map("users")
-}
-
-model ShortLink {
-  id          BigInt       @id @default(autoincrement())
-  userId      BigInt       @map("user_id")
-  originalUrl String       @map("original_url")
-  shortCode   String       @unique @map("short_code")
-  createdAt   DateTime     @default(now()) @map("created_at")
-  clickTracks ClickTrack[]
-  user        User         @relation(fields: [userId], references: [id])
-
-  @@map("short_links")
-}
-
-model ClickTrack {
-  id          BigInt    @id @default(autoincrement())
-  shortLinkId BigInt    @map("short_link_id")
-  clickedAt   DateTime  @default(now()) @map("clicked_at")
-  referrer    String?
-  userAgent   String?   @map("user_agent")
-  shortLink   ShortLink @relation(fields: [shortLinkId], references: [id])
-
-  @@map("click_tracking")
-}
-
-model Report {
-  id          BigInt   @id @default(autoincrement())
-  userId      BigInt   @map("user_id")
-  reportType  String   @map("report_type")
-  generatedAt DateTime @default(now()) @map("generated_at")
-  data        Json?
-  user        User     @relation(fields: [userId], references: [id])
-
-  @@map("reports")
-}
-
 model Category {
-  id       Int       @id @default(autoincrement())
+  id       String    @id @default(cuid())
   name     String    @unique
   slug     String    @unique
   products Product[]
@@ -75,12 +18,12 @@ model Category {
 }
 
 model Product {
-  id          Int         @id @default(autoincrement())
+  id          String      @id @default(cuid())
   name        String
   description String?
   price       Decimal     @db.Decimal(10, 2)
   stock       Int         @default(0)
-  categoryId  Int?
+  categoryId  String?
   imageUrl    String?
   cartItems   CartItem[]
   orderItems  OrderItem[]
@@ -90,7 +33,7 @@ model Product {
 }
 
 model Customer {
-  id        Int     @id @default(autoincrement())
+  id        String  @id @default(cuid())
   firstName String  @map("first_name")
   lastName  String  @map("last_name")
   email     String  @unique
@@ -103,8 +46,8 @@ model Customer {
 }
 
 model Order {
-  id         Int         @id @default(autoincrement())
-  customerId Int         @map("customer_id")
+  id         String      @id @default(cuid())
+  customerId String      @map("customer_id")
   status     String      @default("PENDING")
   total      Decimal     @db.Decimal(10, 2)
   placedAt   DateTime    @default(now()) @map("placed_at")
@@ -115,9 +58,9 @@ model Order {
 }
 
 model OrderItem {
-  id        Int     @id @default(autoincrement())
-  orderId   Int     @map("order_id")
-  productId Int     @map("product_id")
+  id        String  @id @default(cuid())
+  orderId   String  @map("order_id")
+  productId String  @map("product_id")
   quantity  Int     @default(1)
   price     Decimal @db.Decimal(10, 2)
   order     Order   @relation(fields: [orderId], references: [id])
@@ -127,8 +70,8 @@ model OrderItem {
 }
 
 model Cart {
-  id         Int        @id @default(autoincrement())
-  customerId Int        @unique @map("customer_id")
+  id         String     @id @default(cuid())
+  customerId String     @unique @map("customer_id")
   createdAt  DateTime   @default(now()) @map("created_at")
   updatedAt  DateTime   @updatedAt @map("updated_at")
   items      CartItem[]
@@ -138,9 +81,9 @@ model Cart {
 }
 
 model CartItem {
-  id        Int     @id @default(autoincrement())
-  cartId    Int     @map("cart_id")
-  productId Int     @map("product_id")
+  id        String  @id @default(cuid())
+  cartId    String  @map("cart_id")
+  productId String  @map("product_id")
   quantity  Int     @default(1)
   cart      Cart    @relation(fields: [cartId], references: [id])
   product   Product @relation(fields: [productId], references: [id])
